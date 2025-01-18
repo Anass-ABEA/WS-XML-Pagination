@@ -1,0 +1,112 @@
+const express = require('express');
+const xmlbuilder = require('xmlbuilder');
+
+const app = express();
+const port = 3000;
+
+// Sample user data
+const users = [
+    { id: 1, displayName: 'John Doe' },
+    { id: 2, displayName: 'Jane Smith' },
+    { id: 3, displayName: 'Alice Johnson' },
+    { id: 4, displayName: 'Bob Brown' },
+    { id: 5, displayName: 'Eve White' },
+    { id: 6, displayName: 'Charlie Green' },
+    { id: 7, displayName: 'Diana Blue' },
+    { id: 8, displayName: 'Frank Black' },
+    { id: 9, displayName: 'Grace Purple' },
+    { id: 10, displayName: 'Hank Orange' },
+    { id: 11, displayName: 'Isla Red' },
+    { id: 12, displayName: 'Jack Yellow' },
+    { id: 13, displayName: 'Kara Silver' },
+    { id: 14, displayName: 'Liam Gold' },
+    { id: 15, displayName: 'Mia Brown' },
+    { id: 16, displayName: 'Noah White' },
+    { id: 17, displayName: 'Olivia Gray' },
+    { id: 18, displayName: 'Paul Indigo' },
+    { id: 19, displayName: 'Quinn Teal' },
+    { id: 20, displayName: 'Rachel Pink' },
+    { id: 21, displayName: 'Sam Magenta' },
+    { id: 22, displayName: 'Tina Violet' },
+    { id: 23, displayName: 'Uma Aqua' },
+    { id: 24, displayName: 'Victor Olive' },
+    { id: 25, displayName: 'Wendy Lime' },
+    { id: 26, displayName: 'Xander Cyan' },
+    { id: 27, displayName: 'Yara Peach' },
+    { id: 28, displayName: 'Zane Plum' },
+    { id: 29, displayName: 'Amelia Scarlet' },
+    { id: 30, displayName: 'Ben Emerald' },
+    { id: 31, displayName: 'Clara Sapphire' },
+    { id: 32, displayName: 'Derek Ruby' },
+    { id: 33, displayName: 'Ellie Jade' },
+    { id: 34, displayName: 'Finn Crimson' },
+    { id: 35, displayName: 'Gina Amber' },
+    { id: 36, displayName: 'Harry Topaz' },
+    { id: 37, displayName: 'Ivy Pearl' },
+    { id: 38, displayName: 'Jake Onyx' },
+    { id: 39, displayName: 'Kylie Quartz' },
+    { id: 40, displayName: 'Lola Garnet' },
+    { id: 41, displayName: 'Mason Turquoise' },
+    { id: 42, displayName: 'Nina Aquamarine' },
+    { id: 43, displayName: 'Oscar Opal' },
+    { id: 44, displayName: 'Penny Coral' },
+    { id: 45, displayName: 'Quincy Cerulean' },
+    { id: 46, displayName: 'Ruby Peridot' },
+    { id: 47, displayName: 'Sophie Bronze' },
+    { id: 48, displayName: 'Thomas Silverstone' },
+    { id: 49, displayName: 'Uma Goldstone' },
+    { id: 50, displayName: 'Victor Ironstone' }
+];
+
+// Middleware to set response header for XML
+app.use((req, res, next) => {
+    res.setHeader('Content-Type', 'application/xml');
+    next();
+});
+
+// GET /users?currentPage=1&pageSize=2
+app.get('/users', (req, res) => {
+    const currentPage = parseInt(req.query.currentPage, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize, 10) || 10;
+
+    const startIndex = (currentPage - 1) * pageSize;
+    const paginatedUsers = users.slice(startIndex, startIndex + pageSize);
+
+    const responseXml = xmlbuilder.create('UsersResponse')
+        .ele('currentPage', currentPage).up()
+        .ele('pageSize', pageSize).up()
+        .ele('totalUsers', users.length).up()
+        .ele('users')
+        .ele(paginatedUsers.map(user => ({
+            User: { id: user.id, displayName: user.displayName }
+        })))
+        .end({ pretty: true });
+
+    res.send(responseXml);
+});
+
+// GET /users/:id
+app.get('/users/:id', (req, res) => {
+    const userId = parseInt(req.params.id, 10);
+    const user = users.find(u => u.id === userId);
+
+    if (user) {
+        const responseXml = xmlbuilder.create('UserResponse')
+            .ele('User')
+            .ele('id', user.id).up()
+            .ele('displayName', user.displayName).up()
+            .end({ pretty: true });
+
+        res.send(responseXml);
+    } else {
+        const errorXml = xmlbuilder.create('ErrorResponse')
+            .ele('error', 'User not found')
+            .end({ pretty: true });
+
+        res.status(404).send(errorXml);
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
+});
