@@ -1,5 +1,7 @@
 const express = require('express');
+const xml2js = require('xml2js');
 const xmlbuilder = require('xmlbuilder');
+const bodyParser = require('body-parser')
 
 const app = express();
 const port = 3000;
@@ -63,6 +65,8 @@ app.use((req, res, next) => {
     res.setHeader('Content-Type', 'application/xml');
     next();
 });
+app.use(bodyParser.text({type:"application/xml"}))
+app.use(bodyParser.text({type:"text/xml"}))
 
 // GET /users?currentPage=1&pageSize=2
 app.get('/users', (req, res) => {
@@ -70,19 +74,62 @@ app.get('/users', (req, res) => {
     const pageSize = parseInt(req.query.pageSize, 10) || 10;
 
     const startIndex = (currentPage - 1) * pageSize;
-    const paginatedUsers = users.slice(startIndex, startIndex + pageSize);
+    let paginatedUsers = [];
+    if (startIndex < users.length) {
+        paginatedUsers = users.slice(startIndex, startIndex + pageSize);
+    }
 
     const responseXml = xmlbuilder.create('UsersResponse')
+        .ele('users')
         .ele('currentPage', currentPage).up()
         .ele('pageSize', pageSize).up()
         .ele('totalUsers', users.length).up()
-        .ele('users')
-        .ele(paginatedUsers.map(user => ({
+    if(paginatedUsers.length>0){
+        responseXml
+            .ele(paginatedUsers.map(user => ({
             User: { id: user.id, displayName: user.displayName }
-        })))
-        .end({ pretty: true });
+        })));
+    }
 
-    res.send(responseXml);
+    res.set('Content-Type', 'application/xml');
+    res.send(responseXml.end({ pretty: true }));
+});
+
+
+// POST endpoint to get paginated users with parameters in XML body
+app.post('/users', (req, res) => {
+    const xmlBody = req.body;
+    xml2js.parseString(xmlBody, (err, result) => {
+        if (err) {
+            res.status(400).send('Invalid XML : '+err);
+            return;
+        }
+
+        const pageInfo = result['req:request']['req:body'][0]['req:pageInfo'][0];
+        const pageSize = parseInt(pageInfo['req:size'][0], 10)|| 10;
+        const currentPage = parseInt(pageInfo['req:page'][0], 10) || 1;
+
+        const startIndex = (currentPage - 1) * pageSize;
+        let paginatedUsers = [];
+        if (startIndex < users.length) {
+            paginatedUsers = users.slice(startIndex, startIndex + pageSize);
+        }
+
+        const responseXml = xmlbuilder.create('UsersResponse')
+            .ele('users')
+            .ele('currentPage', currentPage).up()
+            .ele('pageSize', pageSize).up()
+            .ele('totalUsers', users.length).up();
+
+        if (paginatedUsers.length > 0) {
+            responseXml.ele(paginatedUsers.map(user => ({
+                User: { id: user.id, displayName: user.displayName }
+            })));
+        }
+
+        res.set('Content-Type', 'application/xml');
+        res.send(responseXml.end({ pretty: true }));
+    });
 });
 
 // GET /users/:id
