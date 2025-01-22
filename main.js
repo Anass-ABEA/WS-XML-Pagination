@@ -92,42 +92,6 @@ function returnTightResult(pageSize, currentPage, res) {
     res.send(responseXml.end({pretty: true}));
 }
 
-function returnTightResultDTD(pageSize, currentPage, res) {
-    const startIndex = (currentPage - 1) * pageSize;
-    let paginatedUsers = [];
-    if (startIndex < users.length) {
-        paginatedUsers = users.slice(startIndex, startIndex + pageSize);
-    }
-
-// Create the UsersResponse structure
-const usersResponseXml = xmlbuilder.create('UsersResponse')
-    .ele('users')
-    .ele('currentPage', currentPage).up()
-    .ele('pageSize', pageSize).up()
-    .ele('totalUsers', users.length).up();
-
-if (paginatedUsers.length > 0) {
-    const usersElement = usersResponseXml.ele('userList');
-    paginatedUsers.forEach(user => {
-        usersElement.ele('User')
-            .ele('id', user.id).up()
-            .ele('displayName', user.displayName).up();
-    });
-}
-
-// Wrap the UsersResponse in a SOAP Envelope
-const soapXml = xmlbuilder.create('soapenv:Envelope', { encoding: 'UTF-8' })
-    .att('xmlns:soapenv', 'http://schemas.xmlsoap.org/soap/envelope/')
-    .att('xmlns:sch', 'http://www.nedap.com/aeosws/schema')
-    .ele('soapenv:Header').up()
-    .ele('soapenv:Body')
-    .importDocument(usersResponseXml)
-    .end({ pretty: true });
-
-    res.set('Content-Type', 'application/xml');
-    res.send(soapXml.end({pretty: true}));
-}
-
 function separatedResult(pageSize, currentPage, res) {
     const startIndex = (currentPage - 1) * pageSize;
     let paginatedUsers = [];
@@ -186,16 +150,23 @@ app.post('/users/dtd', (req, res) => {
   const xmlBody = req.body;
   console.log("query",req.query);
   console.log("body",xmlBody);
-  xml2js.parseString(xmlBody, (err, result) => {
+
+  const parser = new xml2js.Parser({
+    explicitArray: false, // Prevents arrays for single elements
+    tagNameProcessors: [xml2js.processors.stripPrefix] // Strips namespace prefixes like `sch:`
+  });
+
+
+  parser.parseString(xmlBody, (err, result) => {
       if (err) {
           res.status(400).send('Invalid XML : ' + err);
           return;
       }
-      const pageInfo = result['params']['body'][0]['pageInfo'][0];
-      const pageSize = parseInt(pageInfo['size'][0], 10) || 10;
-      const currentPage = parseInt(pageInfo['page'][0], 10) || 1;
+      const pageInfo = result.Envelope.Body.PersonSearchInfo.SearchRange;
+      const pageSize = parseInt(pageInfo.nrOfRecords, 10) || 10;
+      const currentPage = parseInt(pageInfo.startRecordNo, 10) || 1;
 
-      returnTightResultDTD(pageSize, currentPage, res);
+      returnTightResult(pageSize, currentPage, res);
   });
 });
 
