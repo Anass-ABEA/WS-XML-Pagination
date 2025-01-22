@@ -174,9 +174,9 @@ app.post('/separated/users', (req, res) => {
             res.status(400).send('Invalid XML : ' + err);
             return;
         }
-        const pageInfo = result['req:params']['req:body'][0]['req:pageInfo'][0];
-        const pageSize = parseInt(pageInfo['req:size'][0], 10) || 10;
-        const currentPage = parseInt(pageInfo['req:page'][0], 10) || 1;
+        const pageInfo = result['params']['body'][0]['pageInfo'][0];
+        const pageSize = parseInt(pageInfo['size'][0], 10) || 10;
+        const currentPage = parseInt(pageInfo['page'][0], 10) || 1;
 
         separatedResult(pageSize, currentPage, res);
     });
