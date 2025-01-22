@@ -133,7 +133,7 @@ app.post('/users', (req, res) => {
             res.status(400).send('Invalid XML : ' + err);
             return;
         }
-        const pageInfo = result['req:request']['req:body'][0]['req:pageInfo'][0];
+        const pageInfo = result['req:params']['req:body'][0]['req:pageInfo'][0];
         const pageSize = parseInt(pageInfo['req:size'][0], 10) || 10;
         const currentPage = parseInt(pageInfo['req:page'][0], 10) || 1;
 
@@ -144,7 +144,7 @@ app.post('/users', (req, res) => {
 // POST endpoint to get paginated users with parameters in XML body
 app.post('/users/json', (req, res) => {
     const result = req.body;
-    const pageInfo = result['request']['body']['pageInfo'];
+    const pageInfo = result['params']['body']['pageInfo'];
     const pageSize = parseInt(pageInfo['size'], 10) || 10;
     const currentPage = parseInt(pageInfo['page'], 10) || 1;
     returnTightResult(pageSize, currentPage, res);
@@ -167,7 +167,7 @@ app.post('/separated/users', (req, res) => {
             res.status(400).send('Invalid XML : ' + err);
             return;
         }
-        const pageInfo = result['req:request']['req:body'][0]['req:pageInfo'][0];
+        const pageInfo = result['req:params']['req:body'][0]['req:pageInfo'][0];
         const pageSize = parseInt(pageInfo['req:size'][0], 10) || 10;
         const currentPage = parseInt(pageInfo['req:page'][0], 10) || 1;
 
@@ -178,7 +178,7 @@ app.post('/separated/users', (req, res) => {
 // POST endpoint to get paginated users with parameters in XML body
 app.post('/separated/users/json', (req, res) => {
     const result = req.body;
-    const pageInfo = result['request']['body']['pageInfo'];
+    const pageInfo = result['params']['body']['pageInfo'];
     const pageSize = parseInt(pageInfo['size'], 10) || 10;
     const currentPage = parseInt(pageInfo['page'], 10) || 1;
     separatedResult(pageSize, currentPage, res);
