@@ -128,6 +128,7 @@ app.get('/users', (req, res) => {
 // POST endpoint to get paginated users with parameters in XML body
 app.post('/users', (req, res) => {
     const xmlBody = req.body;
+    console.log("body",xmlBody);
     xml2js.parseString(xmlBody, (err, result) => {
         if (err) {
             res.status(400).send('Invalid XML : ' + err);
