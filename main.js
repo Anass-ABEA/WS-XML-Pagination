@@ -128,6 +128,7 @@ app.get('/users', (req, res) => {
 // POST endpoint to get paginated users with parameters in XML body
 app.post('/users', (req, res) => {
     const xmlBody = req.body;
+    console.log("query",req.query);
     console.log("body",xmlBody);
     xml2js.parseString(xmlBody, (err, result) => {
         if (err) {
@@ -145,6 +146,8 @@ app.post('/users', (req, res) => {
 // POST endpoint to get paginated users with parameters in XML body
 app.post('/users/json', (req, res) => {
     const result = req.body;
+    console.log("query",req.query);
+    console.log("body",result);
     const pageInfo = result['params']['body']['pageInfo'];
     const pageSize = parseInt(pageInfo['size'], 10) || 10;
     const currentPage = parseInt(pageInfo['page'], 10) || 1;
@@ -153,6 +156,7 @@ app.post('/users/json', (req, res) => {
 
 // GET /users?currentPage=1&pageSize=2
 app.get('/separated/users', (req, res) => {
+    console.log("query",req.query);
     const currentPage = parseInt(req.query.currentPage, 10) || 1;
     const pageSize = parseInt(req.query.pageSize, 10) || 10;
 
@@ -163,6 +167,8 @@ app.get('/separated/users', (req, res) => {
 // POST endpoint to get paginated users with parameters in XML body
 app.post('/separated/users', (req, res) => {
     const xmlBody = req.body;
+    console.log("query",req.query);
+    console.log("body",xmlBody);
     xml2js.parseString(xmlBody, (err, result) => {
         if (err) {
             res.status(400).send('Invalid XML : ' + err);
@@ -179,6 +185,8 @@ app.post('/separated/users', (req, res) => {
 // POST endpoint to get paginated users with parameters in XML body
 app.post('/separated/users/json', (req, res) => {
     const result = req.body;
+    console.log("query",req.query);
+    console.log("body",result);
     const pageInfo = result['params']['body']['pageInfo'];
     const pageSize = parseInt(pageInfo['size'], 10) || 10;
     const currentPage = parseInt(pageInfo['page'], 10) || 1;
