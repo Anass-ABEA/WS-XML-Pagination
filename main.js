@@ -186,7 +186,7 @@ app.post('/separated/users', (req, res) => {
 app.post('/separated/users/json', (req, res) => {
     const result = req.body;
     console.log("query",req.query);
-    console.log("body",result);
+    console.log("body-res",result);
     const pageInfo = result['params']['body']['pageInfo'];
     const pageSize = parseInt(pageInfo['size'], 10) || 10;
     const currentPage = parseInt(pageInfo['page'], 10) || 1;
