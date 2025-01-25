@@ -7,9 +7,23 @@ const app = express();
 const port = 3000;
 
 // Sample user data
-const users = [
-    {id: 1, displayName: 'John Doe'},
-    {id: 2, displayName: 'Jane Smith'},
+let users = [
+    {
+        id: 1, displayName: 'John Doe', AuthorisationOnline: {
+            EntranceGroupAuthorisation: [
+                {id: 1234, enabled: true, entranceGroupId: 452, dateTimeScheduleId: [390, 421]},
+                {id: 1222, enabled: true, entranceGroupId: 802, dateTimeScheduleId: 421}
+            ]
+        }
+    },
+    {
+        id: 2, displayName: 'Jane Smith', AuthorisationOnline: {
+            EntranceGroupAuthorisation: [
+                {id: 1111, enabled: true, entranceGroupId: 802, dateTimeScheduleId: 390},
+                {id: 3333, enabled: true, entranceGroupId: 452, dateTimeScheduleId: 421}
+            ]
+        }
+    },
     {id: 3, displayName: 'Alice Johnson'},
     {id: 4, displayName: 'Bob Brown'},
     {id: 5, displayName: 'Eve White'},
@@ -37,28 +51,31 @@ const users = [
     {id: 27, displayName: 'Yara Peach'},
     {id: 28, displayName: 'Zane Plum'},
     {id: 29, displayName: 'Amelia Scarlet'},
-    {id: 30, displayName: 'Ben Emerald'},
-    {id: 31, displayName: 'Clara Sapphire'},
-    {id: 32, displayName: 'Derek Ruby'},
-    {id: 33, displayName: 'Ellie Jade'},
-    {id: 34, displayName: 'Finn Crimson'},
-    {id: 35, displayName: 'Gina Amber'},
-    {id: 36, displayName: 'Harry Topaz'},
-    {id: 37, displayName: 'Ivy Pearl'},
-    {id: 38, displayName: 'Jake Onyx'},
-    {id: 39, displayName: 'Kylie Quartz'},
-    {id: 40, displayName: 'Lola Garnet'},
-    {id: 41, displayName: 'Mason Turquoise'},
-    {id: 42, displayName: 'Nina Aquamarine'},
-    {id: 43, displayName: 'Oscar Opal'},
-    {id: 44, displayName: 'Penny Coral'},
-    {id: 45, displayName: 'Quincy Cerulean'},
-    {id: 46, displayName: 'Ruby Peridot'},
-    {id: 47, displayName: 'Sophie Bronze'},
-    {id: 48, displayName: 'Thomas Silverstone'},
-    {id: 49, displayName: 'Uma Goldstone'},
-    {id: 50, displayName: 'Victor Ironstone'}
+    {id: 30, displayName: 'Ben Emerald'}
 ];
+
+const usrCopy = {...users};
+
+const dayTimeSchedules = [
+    {id: 421, name: "Permanent", description: "24/7"},
+    {id: 390, name: "MONTAIGNE HORAIRES DE BUREAU", description: "Lundi au vendredi - 5H45 à 20H45 jours ouvrés"},
+];
+const entranceGroups = [
+    {id: 802, name: "GA-CADE - LOCAL VELO", entranceIdList: [1533]},
+    {
+        id: 452,
+        name: "GA-CADE BUREAU DOSSIERS MEDICAUX",
+        description: "ET.6 BUREAU DOSSIERS MEDICAUX",
+        entranceIdList: [1524, 1528, 1529, 1534, 2156]
+    },
+];
+const entrances = [
+    {id:1533, name:"Hello 1553"},
+    {id:1524, name:"Hello 1524"},
+    {id:1528, name:"Hello 1528"},
+    {id:1529, name:"Hello 1529"},
+    {id:2156, name:"Hello 2156"},
+]
 
 // Middleware to set response header for XML
 app.use((req, res, next) => {
@@ -69,7 +86,32 @@ app.use(bodyParser.text({type: "application/xml"}))
 app.use(bodyParser.text({type: "text/xml"}))
 app.use(bodyParser.json())
 
-function returnTightResult(pageSize, currentPage, res) {
+function returnObjectListResult(parentXml, valueXml, list, res) {
+    const responseXml = xmlbuilder.create(parentXml)
+        .ele('data')
+
+    if (list.length > 0) {
+        responseXml.ele(list.map(element => ({
+            [valueXml]: element
+        })));
+    }
+
+    res.set('Content-Type', 'application/xml');
+    res.send(responseXml.end({pretty: true}));
+}
+
+function returnObjectResult(parentXml, valueXml, element, res) {
+    const responseXml = xmlbuilder.create(parentXml)
+        .ele('data')
+        responseXml.ele({
+            [valueXml]: element
+        });
+
+    res.set('Content-Type', 'application/xml');
+    res.send(responseXml.end({pretty: true}));
+}
+
+function retrurnUsersResult(pageSize, currentPage, res) {
     const startIndex = (currentPage - 1) * pageSize;
     let paginatedUsers = [];
     if (startIndex < users.length) {
@@ -84,31 +126,7 @@ function returnTightResult(pageSize, currentPage, res) {
 
     if (paginatedUsers.length > 0) {
         responseXml.ele(paginatedUsers.map(user => ({
-            User: {id: user.id, displayName: user.displayName}
-        })));
-    }
-
-    res.set('Content-Type', 'application/xml');
-    res.send(responseXml.end({pretty: true}));
-}
-
-function separatedResult(pageSize, currentPage, res) {
-    const startIndex = (currentPage - 1) * pageSize;
-    let paginatedUsers = [];
-    if (startIndex < users.length) {
-        paginatedUsers = users.slice(startIndex, startIndex + pageSize);
-    }
-
-    const responseXml = xmlbuilder.create('UsersResponse')
-        .ele('users')
-        .ele('currentPage', currentPage).up()
-        .ele('pageSize', pageSize).up()
-        .ele('totalUsers', users.length).up();
-
-    if (paginatedUsers.length > 0) {
-        responseXml
-            .ele('data').ele(paginatedUsers.map(user => ({
-            User: {id: user.id, displayName: user.displayName}
+            User: user
         })));
     }
 
@@ -121,15 +139,13 @@ app.get('/users', (req, res) => {
     const currentPage = parseInt(req.query.currentPage, 10) || 1;
     const pageSize = parseInt(req.query.pageSize, 10) || 10;
 
-    returnTightResult(pageSize, currentPage, res);
+    retrurnUsersResult(pageSize, currentPage, res);
 });
-
 
 // POST endpoint to get paginated users with parameters in XML body
 app.post('/users', (req, res) => {
     const xmlBody = req.body;
-    console.log("query",req.query);
-    console.log("body",xmlBody);
+    console.log("body", xmlBody);
     xml2js.parseString(xmlBody, (err, result) => {
         if (err) {
             res.status(400).send('Invalid XML : ' + err);
@@ -139,97 +155,52 @@ app.post('/users', (req, res) => {
         const pageSize = parseInt(pageInfo['size'][0], 10) || 10;
         const currentPage = parseInt(pageInfo['page'][0], 10) || 1;
 
-        returnTightResult(pageSize, currentPage, res);
+        retrurnUsersResult(pageSize, currentPage, res);
     });
 });
 
-
-
 // POST endpoint to get paginated users with parameters in XML body
 app.post('/users/dtd', (req, res) => {
-  const xmlBody = req.body;
-  console.log("query",req.query);
-  console.log("body",xmlBody);
+    const xmlBody = req.body;
 
-  const parser = new xml2js.Parser({
-    explicitArray: false, // Prevents arrays for single elements
-    tagNameProcessors: [xml2js.processors.stripPrefix] // Strips namespace prefixes like `sch:`
-  });
+    const parser = new xml2js.Parser({
+        explicitArray: false, // Prevents arrays for single elements
+        tagNameProcessors: [xml2js.processors.stripPrefix] // Strips namespace prefixes like `sch:`
+    });
 
 
-  parser.parseString(xmlBody, (err, result) => {
-      if (err) {
-          res.status(400).send('Invalid XML : ' + err);
-          return;
-      }
-      const pageInfo = result.Envelope.Body.PersonSearchInfo.SearchRange;
-      const pageSize = parseInt(pageInfo.nrOfRecords, 10) || 10;
-      const currentPage = parseInt(pageInfo.startRecordNo, 10) || 1;
+    parser.parseString(xmlBody, (err, result) => {
+        if (err) {
+            res.status(400).send('Invalid XML : ' + err);
+            return;
+        }
+        const pageInfo = result.Envelope.Body.PersonSearchInfo.SearchRange;
+        const pageSize = parseInt(pageInfo.nrOfRecords, 10) || 10;
+        const currentPage = parseInt(pageInfo.startRecordNo, 10) || 1;
 
-      returnTightResult(pageSize, currentPage, res);
-  });
+        retrurnUsersResult(pageSize, currentPage, res);
+    });
 });
 
 // POST endpoint to get paginated users with parameters in XML body
 app.post('/users/json', (req, res) => {
     const result = req.body;
-    console.log("query",req.query);
-    console.log("body",result);
+    console.log("body", result);
     const pageInfo = result['params']['body']['pageInfo'];
     const pageSize = parseInt(pageInfo['size'], 10) || 10;
     const currentPage = parseInt(pageInfo['page'], 10) || 1;
-    returnTightResult(pageSize, currentPage, res);
-});
-
-// GET /users?currentPage=1&pageSize=2
-app.get('/separated/users', (req, res) => {
-    console.log("query",req.query);
-    const currentPage = parseInt(req.query.currentPage, 10) || 1;
-    const pageSize = parseInt(req.query.pageSize, 10) || 10;
-
-    separatedResult(pageSize, currentPage, res);
-});
-
-
-// POST endpoint to get paginated users with parameters in XML body
-app.post('/separated/users', (req, res) => {
-    const xmlBody = req.body;
-    console.log("query",req.query);
-    console.log("body",xmlBody);
-    xml2js.parseString(xmlBody, (err, result) => {
-        if (err) {
-            res.status(400).send('Invalid XML : ' + err);
-            return;
-        }
-        const pageInfo = result['params']['body'][0]['pageInfo'][0];
-        const pageSize = parseInt(pageInfo['size'][0], 10) || 10;
-        const currentPage = parseInt(pageInfo['page'][0], 10) || 1;
-
-        separatedResult(pageSize, currentPage, res);
-    });
-});
-
-// POST endpoint to get paginated users with parameters in XML body
-app.post('/separated/users/json', (req, res) => {
-    const result = req.body;
-    console.log("query",req.query);
-    console.log("body-res",result);
-    const pageInfo = result['params']['body']['pageInfo'];
-    const pageSize = parseInt(pageInfo['size'], 10) || 10;
-    const currentPage = parseInt(pageInfo['page'], 10) || 1;
-    separatedResult(pageSize, currentPage, res);
+    retrurnUsersResult(pageSize, currentPage, res);
 });
 
 // GET /users/:id
 app.get('/users/:id', (req, res) => {
     const userId = parseInt(req.params.id, 10);
     const user = users.find(u => u.id === userId);
-
     if (user) {
         const responseXml = xmlbuilder.create('UserResponse')
-            .ele('User')
-            .ele('id', user.id).up()
-            .ele('displayName', user.displayName).up()
+            .ele({
+                User: user
+            })
             .end({pretty: true});
 
         res.send(responseXml);
@@ -241,6 +212,70 @@ app.get('/users/:id', (req, res) => {
         res.status(404).send(errorXml);
     }
 });
+
+
+// GET /users/:id/addEntrance
+app.post('/users/:id/addEntrance', (req, res) => {
+    const userId = parseInt(req.params.id, 10);
+    const user = users.find(u => u.id === userId);
+
+    if (!user) {
+        const errorXml = xmlbuilder.create('ErrorResponse')
+            .ele('error', 'User not found')
+            .end({pretty: true});
+
+        res.status(404).send(errorXml);
+        return;
+    }
+
+    if (!user.AuthorisationOnline) {
+        user.AuthorisationOnline = {}
+    }
+    if (!user.AuthorisationOnline.EntranceGroupAuthorisation) {
+        user.AuthorisationOnline.EntranceGroupAuthorisation = []
+    }
+
+    const xmlBody = req.body;
+    console.log("body", xmlBody);
+    xml2js.parseString(xmlBody, (err, result) => {
+        if (err) {
+            res.status(400).send('Invalid XML : ' + err);
+            return;
+        }
+        const entranceGroupId = result.data.EntranceGroupAuthorisation[0].EntranceId[0];
+        const dateTimeScheduleId = result.data.EntranceGroupAuthorisation[0].DateTimeScheduleId;
+        const id = parseInt(Math.random() * 1000, 10);
+        const permissions = {
+            id, entranceGroupId, dateTimeScheduleId, enabled: true
+        }
+        user.AuthorisationOnline.EntranceGroupAuthorisation.push(permissions);
+        console.log(JSON.stringify(user));
+        returnObjectResult("UserData", "User", user, res);
+    });
+
+});
+
+// GET /entranceGroups
+app.get('/entranceGroups', (req, res) => {
+    returnObjectListResult("EntranceGroupList", "EntranceGroup", entranceGroups, res);
+});
+
+// GET /entranceGroups
+app.get('/dayTimeShedules', (req, res) => {
+    returnObjectListResult("DayTimeScheduleList", "DayTimeSchedule", dayTimeSchedules, res);
+});
+
+// GET /entranceGroups
+app.get('/entrances', (req, res) => {
+    returnObjectListResult("EntranceList", "Entrance", entrances, res);
+});
+
+// GET /reset
+app.get('/reset', (req, res) => {
+    users = {...usrCopy};
+    res.status(200).send();
+});
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
