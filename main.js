@@ -6,6 +6,83 @@ const bodyParser = require('body-parser')
 const app = express();
 const port = 3000;
 
+let projects = [
+    {id: "P1", name : "Project 1"},
+    {id: "P2", name : "Project 2"},
+    {id: "P3", name : "Project 3"},
+    {id: "P4", name : "Project 4"},
+    {id: "P5", name : "Project 5"}
+]
+
+let access = [
+    {id: "A1", name : "Read Users"},
+    {id: "A2", name : "Write Users"},
+    {id: "A3", name : "Read Sales"},
+    {id: "A4", name : "Receipts generation"},
+    {id: "A5", name : "Data extraction"}
+]
+
+let doors = [
+    {Id: "P1", name : "Project 1"},
+    {Id: "P2", name : "Project 2"},
+    {Id: "P3", name : "Project 3"},
+    {Id: "P4", name : "Project 4"},
+    {Id: "P5", name : "Project 5"}
+]
+
+let time_slots = [
+    {id: "S001", names : "09"},
+    {id: "S002", names : "Weekends"},
+    {id: "S003", names : "work week"},
+    {id: "S101", names : "Mornings"},
+    {id: "S012", names : "Nights"}
+]
+
+let flat_users = [
+    {id: 3, displayName: 'Alice Johnson', access: [
+        {project: "P1",access: "A1"},
+        {project: "P1",access: "A2"},
+        {project: "P1",access: "A3"},
+        {project: "P2",access: "A0"},
+        {project: "P3",access: "A5"}
+    ], doors: [
+        {door: "D1",slot: "S001"},
+        {door: "D1",slot: "S002"},
+        {door: "D2",slot: "S101"},
+        {door: "D3",slot: "S011"}
+    ]
+},
+    {id: 4, displayName: 'Bob Brown'},
+    {id: 5, displayName: 'Eve White'},
+    {id: 6, displayName: 'Charlie Green'},
+    {id: 7, displayName: 'Diana Blue'},
+    {id: 8, displayName: 'Frank Black'},
+    {id: 9, displayName: 'Grace Purple'},
+    {id: 10, displayName: 'Hank Orange'},
+    {id: 11, displayName: 'Isla Red'},
+    {id: 12, displayName: 'Jack Yellow'},
+    {id: 13, displayName: 'Kara Silver'},
+    {id: 14, displayName: 'Liam Gold'},
+    {id: 15, displayName: 'Mia Brown'},
+    {id: 16, displayName: 'Noah White'},
+    {id: 17, displayName: 'Olivia Gray'},
+    {id: 18, displayName: 'Paul Indigo'},
+    {id: 19, displayName: 'Quinn Teal'},
+    {id: 20, displayName: 'Rachel Pink'},
+    {id: 21, displayName: 'Sam Magenta'},
+    {id: 22, displayName: 'Tina Violet'},
+    {id: 23, displayName: 'Uma Aqua'},
+    {id: 24, displayName: 'Victor Olive'},
+    {id: 25, displayName: 'Wendy Lime'},
+    {id: 26, displayName: 'Xander Cyan'},
+    {id: 27, displayName: 'Yara Peach'},
+    {id: 28, displayName: 'Zane Plum'},
+    {id: 29, displayName: 'Amelia Scarlet'},
+    {id: 30, displayName: 'Ben Emerald'}
+]
+
+const flat_users_copy = {...flat_users};
+
 // Sample user data
 let users = [
     {
@@ -274,6 +351,112 @@ app.get('/entrances', (req, res) => {
 app.get('/reset', (req, res) => {
     users = {...usrCopy};
     res.status(200).send();
+});
+
+
+
+// GET /reset
+app.get('/beta/reset', (req, res) => {
+    flat_users = {...flat_users_copy};
+    res.status(200).send();
+});
+
+app.post('/beta/users', (req, res) => {
+    const result = req.body;
+    const pageInfo = result['params']['body']['pageInfo'];
+    const pageSize = parseInt(pageInfo['size'], 10) || 10;
+    const currentPage = parseInt(pageInfo['page'], 10) || 1;
+    
+    const startIndex = (currentPage - 1) * pageSize;
+    let paginatedUsers = [];
+    if (startIndex < flat_users.length) {
+        paginatedUsers = users.slice(startIndex, startIndex + pageSize);
+    }
+    res.status(200).send(paginatedUsers);
+});
+
+app.post('/beta/projects', (req, res) => {
+    const result = req.body;
+    const pageInfo = result['params']['body']['pageInfo'];
+    const pageSize = parseInt(pageInfo['size'], 10) || 10;
+    const currentPage = parseInt(pageInfo['page'], 10) || 1;
+    
+    const startIndex = (currentPage - 1) * pageSize;
+    let paginatedUsers = [];
+    if (startIndex < flat_users.length) {
+        paginatedUsers = projects.slice(startIndex, startIndex + pageSize);
+    }
+    res.status(200).send(paginatedUsers);
+});
+
+
+
+app.post('/beta/access', (req, res) => {
+    const result = req.body;
+    const pageInfo = result['params']['body']['pageInfo'];
+    const pageSize = parseInt(pageInfo['size'], 10) || 10;
+    const currentPage = parseInt(pageInfo['page'], 10) || 1;
+    
+    const startIndex = (currentPage - 1) * pageSize;
+    let paginatedUsers = [];
+    if (startIndex < flat_users.length) {
+        paginatedUsers = access.slice(startIndex, startIndex + pageSize);
+    }
+    res.status(200).send(paginatedUsers);
+});
+
+
+
+
+app.post('/beta/doors', (req, res) => {
+    const result = req.body;
+    const pageInfo = result['params']['body']['pageInfo'];
+    const pageSize = parseInt(pageInfo['size'], 10) || 10;
+    const currentPage = parseInt(pageInfo['page'], 10) || 1;
+    
+    const startIndex = (currentPage - 1) * pageSize;
+    let paginatedUsers = [];
+    if (startIndex < flat_users.length) {
+        paginatedUsers = doors.slice(startIndex, startIndex + pageSize);
+    }
+    res.status(200).send(paginatedUsers);
+});
+
+
+
+app.post('/beta/timeslots', (req, res) => {
+    const result = req.body;
+    const pageInfo = result['params']['body']['pageInfo'];
+    const pageSize = parseInt(pageInfo['size'], 10) || 10;
+    const currentPage = parseInt(pageInfo['page'], 10) || 1;
+    
+    const startIndex = (currentPage - 1) * pageSize;
+    let paginatedUsers = [];
+    if (startIndex < flat_users.length) {
+        paginatedUsers = time_slots.slice(startIndex, startIndex + pageSize);
+    }
+    res.status(200).send(paginatedUsers);
+});
+
+
+app.post('/beta/users/:id/addProjectAccess', (req, res) => {
+    const userId = parseInt(req.params.id, 10);
+    const user = flat_users.find(u => u.id === userId);
+
+    if (!user) {
+        res.status(404).send({error: "User Not found"});
+        return;
+    }
+
+    if (!user.access) {
+        user.access = []
+    }
+    
+
+    const {project, access} = req.body;
+    user.access.add({project, access})
+   
+    res.status(200).send(user);
 });
 
 
