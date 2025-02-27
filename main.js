@@ -23,11 +23,11 @@ let access = [
 ]
 
 let doors = [
-    {Id: "P1", name : "Project 1"},
-    {Id: "P2", name : "Project 2"},
-    {Id: "P3", name : "Project 3"},
-    {Id: "P4", name : "Project 4"},
-    {Id: "P5", name : "Project 5"}
+    {Id: "D1", name : "entrance 001"},
+    {Id: "D2", name : "entrance 002"},
+    {Id: "D3", name : "garage"},
+    {Id: "D4", name : "show room"},
+    {Id: "D5", name : "entrance floor 7"}
 ]
 
 let time_slots = [
