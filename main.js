@@ -357,7 +357,7 @@ app.get('/reset', (req, res) => {
 
 // GET /reset
 app.get('/beta/reset', (req, res) => {
-    flat_users = {...flat_users_copy};
+    flat_users = [...flat_users_copy];
     console.log("users", flat_users);
     res.status(200).send();
 });
