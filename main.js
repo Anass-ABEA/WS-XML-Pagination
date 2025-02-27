@@ -362,6 +362,7 @@ app.get('/beta/reset', (req, res) => {
 });
 
 app.post('/beta/users', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
     const result = req.body;
     const pageInfo = result['params']['body']['pageInfo'];
     const pageSize = parseInt(pageInfo['size'], 10) || 10;
@@ -376,6 +377,7 @@ app.post('/beta/users', (req, res) => {
 });
 
 app.post('/beta/projects', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
     const result = req.body;
     const pageInfo = result['params']['body']['pageInfo'];
     const pageSize = parseInt(pageInfo['size'], 10) || 10;
@@ -392,6 +394,7 @@ app.post('/beta/projects', (req, res) => {
 
 
 app.post('/beta/access', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
     const result = req.body;
     const pageInfo = result['params']['body']['pageInfo'];
     const pageSize = parseInt(pageInfo['size'], 10) || 10;
@@ -409,6 +412,7 @@ app.post('/beta/access', (req, res) => {
 
 
 app.post('/beta/doors', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
     const result = req.body;
     const pageInfo = result['params']['body']['pageInfo'];
     const pageSize = parseInt(pageInfo['size'], 10) || 10;
@@ -425,6 +429,7 @@ app.post('/beta/doors', (req, res) => {
 
 
 app.post('/beta/timeslots', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
     const result = req.body;
     const pageInfo = result['params']['body']['pageInfo'];
     const pageSize = parseInt(pageInfo['size'], 10) || 10;
@@ -440,6 +445,7 @@ app.post('/beta/timeslots', (req, res) => {
 
 
 app.post('/beta/users/:id/addProjectAccess', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
     const userId = parseInt(req.params.id, 10);
     const user = flat_users.find(u => u.id === userId);
 
