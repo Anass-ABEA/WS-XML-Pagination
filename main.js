@@ -458,9 +458,16 @@ app.post('/beta/users/:id/addProjectAccess', (req, res) => {
         user.access = []
     }
     
+    const {project, accessToAdd} = req.body;
+    const prj = projects.find(u => u.id === project);
+    const acc = access.find(u => u.id === accessToAdd);
 
-    const {project, access} = req.body;
-    user.access.add({project, access})
+    if (!prj || !acc) {
+        res.status(404).send({error: "permission not found"});
+        return;
+    }
+
+    user.access.push({project, accessToAdd})
    
     res.status(200).send(user);
 });
