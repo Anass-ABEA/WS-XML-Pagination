@@ -370,7 +370,7 @@ app.post('/beta/users', (req, res) => {
     const startIndex = (currentPage - 1) * pageSize;
     let paginatedUsers = [];
     if (startIndex < flat_users.length) {
-        paginatedUsers = users.slice(startIndex, startIndex + pageSize);
+        paginatedUsers = flat_users.slice(startIndex, startIndex + pageSize);
     }
     res.status(200).send(paginatedUsers);
 });
@@ -383,7 +383,7 @@ app.post('/beta/projects', (req, res) => {
     
     const startIndex = (currentPage - 1) * pageSize;
     let paginatedUsers = [];
-    if (startIndex < flat_users.length) {
+    if (startIndex < projects.length) {
         paginatedUsers = projects.slice(startIndex, startIndex + pageSize);
     }
     res.status(200).send(paginatedUsers);
@@ -399,7 +399,7 @@ app.post('/beta/access', (req, res) => {
     
     const startIndex = (currentPage - 1) * pageSize;
     let paginatedUsers = [];
-    if (startIndex < flat_users.length) {
+    if (startIndex < access.length) {
         paginatedUsers = access.slice(startIndex, startIndex + pageSize);
     }
     res.status(200).send(paginatedUsers);
@@ -416,7 +416,7 @@ app.post('/beta/doors', (req, res) => {
     
     const startIndex = (currentPage - 1) * pageSize;
     let paginatedUsers = [];
-    if (startIndex < flat_users.length) {
+    if (startIndex < doors.length) {
         paginatedUsers = doors.slice(startIndex, startIndex + pageSize);
     }
     res.status(200).send(paginatedUsers);
@@ -432,7 +432,7 @@ app.post('/beta/timeslots', (req, res) => {
     
     const startIndex = (currentPage - 1) * pageSize;
     let paginatedUsers = [];
-    if (startIndex < flat_users.length) {
+    if (startIndex < time_slots.length) {
         paginatedUsers = time_slots.slice(startIndex, startIndex + pageSize);
     }
     res.status(200).send(paginatedUsers);
